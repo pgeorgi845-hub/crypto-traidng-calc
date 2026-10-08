@@ -1,0 +1,165 @@
+<!doctype html>
+<!-- Purpose: Offline direction calculator from entry and stop prices. Public API: Browser UI. Dependencies: mobile.css, orbit.svg. -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="color-scheme" content="dark">
+<title>Orbit | Trade Calculator</title>
+<link rel="icon" type="image/svg+xml" href="orbit.svg">
+<link rel="stylesheet" href="mobile.css">
+</head>
+<body>
+<main>
+<nav aria-label="Brand"><div class="brand"><img class="mark" src="orbit.svg" width="36" height="36" alt="" aria-hidden="true">orbit<span style="color:#83978a">.</span></div><span class="tag">Local &amp; offline</span></nav>
+<header><div class="eyebrow">Trade calculator</div><h1>Your next move.<br><span>In clear numbers.</span></h1><p>Enter your prices. See your direction.</p></header>
+<div class="layout">
+<section class="card result" aria-labelledby="outcome">
+<div class="eyebrow" id="outcome">Direction</div>
+<output class="amount" id="direction" for="entry sl" aria-live="polite" aria-atomic="true">&#8212;</output>
+<div class="badge" id="reason">Enter Entry and 50% SL to begin.</div>
+</section>
+<section class="card" aria-labelledby="setup">
+<div class="heading"><h2 id="setup">Your prices</h2><span class="step">AUTO DIRECTION</span></div>
+<div class="fields">
+
+
+
+
+
+
+
+<div><label for="entry">Entry</label><div class="input"><input id="entry" autocomplete="off" type="number" step="any" placeholder="e.g. 60000" inputmode="decimal" aria-describedby="error"><span class="unit">USD</span></div></div>
+<div><label for="sl">50% SL</label><div class="input"><input id="sl" autocomplete="off" type="number" step="any" placeholder="e.g. 59000" inputmode="decimal" aria-describedby="error"><span class="unit">USD</span></div></div>
+<div><label for="exit">Exit</label><div class="input"><input id="exit" autocomplete="off" type="number" step="any" placeholder="e.g. 62000" inputmode="decimal"><span class="unit">USD</span></div></div>
+<details class="rates-panel" id="trade-input-details">
+<summary>Trade details</summary>
+<div class="fields">
+<div id="fx-field" hidden><label for="eur-usd">1 EUR = USD</label><div class="input"><input id="eur-usd" type="number" step="any" inputmode="decimal" aria-describedby="fx-note"><span class="unit">USD</span></div><p class="help" id="fx-note">Daily reference rate loads automatically. You can override it.</p></div>
+<div>
+<div class="switch"><button type="button" id="remember-prices" aria-pressed="false" aria-describedby="remember-prices-note">Remember prices: Off</button></div>
+<p class="help" id="remember-prices-note" role="status">Entry, 50% SL and Exit clear on reload.</p>
+</div>
+<div>
+<label for="balance-before">Total portfolio / Balance before</label>
+<div class="switch" role="group" aria-label="Balance currency">
+<button type="button" data-balance-currency="EUR" aria-pressed="false">EUR</button>
+<button type="button" data-balance-currency="USD" aria-pressed="true">USD</button>
+</div>
+<div class="input"><input id="balance-before" type="text" placeholder="e.g. 10000" inputmode="decimal" aria-describedby="balance-currency-note balance-currency-unit"><span class="unit" id="balance-currency-unit">USD</span></div>
+<p class="help" id="balance-currency-note">Currency of your balance. Switching currency does not convert the amount. Entry, 50% SL and Exit remain in USD.</p>
+</div>
+<div><label for="safety-factor">ByBit Cost Safety factor</label><div class="input"><input id="safety-factor" type="number" step="any" value="2" inputmode="decimal" aria-describedby="safety-note"><span class="unit" aria-hidden="true">x</span></div><p class="help" id="safety-note" role="status">Remembered on this device. Default: 2x.</p></div>
+<div><label for="winning-return-multiplier">Winning return multiplier</label><div class="input"><input id="winning-return-multiplier" type="number" min="0" step="any" value="0.85" inputmode="decimal" aria-describedby="winning-return-note"><span class="unit" aria-hidden="true">x</span></div><p class="help" id="winning-return-note">Multiplies positive returns only. Losses are unchanged.</p></div>
+<div><label for="chosen-risk">Chosen risk in R</label><div class="input"><input id="chosen-risk" type="number" min="0" step="any" placeholder="0.95" inputmode="decimal" aria-describedby="risk-note"><span class="unit" aria-hidden="true">R</span></div><p class="help" id="risk-note" role="status">Remembered on this device.</p></div>
+</div>
+</details>
+</div>
+<p class="help">50% SL below Entry = Long. Above Entry = Short.</p>
+<p class="error" id="error" role="status"></p>
+</section>
+</div>
+<section class="card" aria-labelledby="returns-label">
+<div class="heading"><h2 id="returns-label">Returns before fees</h2></div>
+<output class="amount" for="entry sl exit winning-return-multiplier" aria-live="polite" aria-atomic="true" id="returns" aria-labelledby="returns-label" aria-describedby="returns-note"></output>
+<p class="help" id="returns-note">Enter Entry, 50% SL and Exit.</p>
+</section>
+<section class="card" aria-labelledby="balance-after-label">
+<div class="heading"><h2 id="balance-after-label">Balance after</h2></div>
+<output id="balance-after" aria-labelledby="balance-after-label" aria-describedby="balance-after-note"></output>
+<p class="help" id="balance-after-note">In development</p>
+</section>
+<section class="card" aria-labelledby="trade-details-label">
+<div class="heading"><h2 id="trade-details-label">Trade details</h2></div>
+<div class="metrics">
+<div class="row"><span id="position-size-btc-label">Position size in BTC</span><output id="position-size-btc" aria-labelledby="position-size-btc-label" aria-describedby="trade-details-note"></output></div>
+<div class="row"><span id="dollar-amount-label">The dollar amount needed in $</span><output id="dollar-amount" aria-labelledby="dollar-amount-label" aria-describedby="trade-details-note"></output></div>
+<div class="row"><span id="position-fees-label">Fees based on the position size</span><output id="position-fees" aria-labelledby="position-fees-label" aria-describedby="trade-details-note"></output></div>
+<div class="row"><span id="risk-fiat-label">Risk in fiat</span><output id="risk-fiat" aria-labelledby="risk-fiat-label" aria-describedby="trade-details-note"></output></div>
+<div class="row"><span id="bybit-cost-r-label">ByBit Cost in R (2x)</span><output id="bybit-cost-r" aria-labelledby="bybit-cost-r-label" aria-describedby="bybit-cost-help trade-details-note"></output></div>
+</div>
+<p class="help" id="bybit-cost-help">Worksheet cost metric in R, using the selected safety factor. Not an exchange margin or liquidation estimate.</p>
+<p class="help" id="trade-details-note">Enter your balance, chosen risk, Entry and 50% SL.</p>
+</section>
+<div class="foot"><span>Instant calculations. No account. No distractions.</span><span>Use Remember prices to keep Entry, 50% SL and Exit after reload.</span></div>
+<footer>Direction is determined by Entry and 50% SL.</footer>
+</main>
+<script>
+// Purpose: Infer direction from two raw prices; no percentage conversion. Public API: None. Dependencies: DOM.
+'use strict';
+const entryInput=document.getElementById('entry');
+const slInput=document.getElementById('sl');
+const directionOutput=document.getElementById('direction');
+const reasonOutput=document.getElementById('reason');
+const errorOutput=document.getElementById('error');
+function render(){
+ const entry=entryInput.valueAsNumber;
+ const sl=slInput.valueAsNumber;
+ const inputs=[entryInput,slInput];
+ const invalid=inputs.map(input=>input.validity.badInput||(input.value!==''&&(!Number.isFinite(input.valueAsNumber)||input.valueAsNumber<=0)));
+ inputs.forEach((input,index)=>input.setAttribute('aria-invalid',String(invalid[index])));
+ directionOutput.textContent='\u2014';
+ directionOutput.className='amount';
+ errorOutput.textContent='';
+ if(invalid.some(Boolean)){
+  reasonOutput.textContent='Check your prices.';
+  errorOutput.textContent='Enter a positive price in each field.';
+  return;
+ }
+ if(inputs.some(input=>input.value==='')){
+  reasonOutput.textContent='Enter Entry and 50% SL to begin.';
+  return;
+ }
+ if(entry===sl){
+  reasonOutput.textContent='Equal prices: no direction.';
+  return;
+ }
+ const isLong=sl<entry;
+ directionOutput.textContent=isLong?'Long':'Short';
+ directionOutput.className='amount '+(isLong?'positive':'negative');
+ reasonOutput.textContent=isLong?'50% SL is below Entry.':'50% SL is above Entry.';
+}
+[entryInput,slInput].forEach(input=>input.addEventListener('input',render));
+render();
+// Remember only the chosen risk; keep the R suffix outside the numeric value.
+const riskInput=document.getElementById('chosen-risk');
+const riskNote=document.getElementById('risk-note');
+const riskStorageKey='orbit.chosenRiskR';
+function validRisk(value){
+ return value.trim()!==''&&Number.isFinite(Number(value))&&Number(value)>=0;
+}
+try{
+ const savedRisk=localStorage.getItem(riskStorageKey);
+ if(savedRisk!==null&&validRisk(savedRisk)) riskInput.value=savedRisk;
+}catch{
+ riskNote.textContent='Saving unavailable. You can still enter your risk.';
+}
+riskInput.addEventListener('input',()=>{
+ const value=riskInput.value;
+ const invalid=riskInput.validity.badInput||(value!==''&&!validRisk(value));
+ riskInput.setAttribute('aria-invalid',String(invalid));
+ if(invalid){riskNote.textContent='Enter a risk of 0 or more.';return;}
+ try{
+  if(value==='') localStorage.removeItem(riskStorageKey);
+  else localStorage.setItem(riskStorageKey,value);
+  riskNote.textContent=value===''?'Remembered on this device.':'Saved on this device.';
+ }catch{
+  riskNote.textContent='Saving unavailable. You can still enter your risk.';
+ }
+});
+</script>
+<script src="safety-factor.js"></script>
+<script src="returns.js"></script>
+<script src="balance-currency.js"></script>
+<script src="price-memory.js"></script>
+<script src="balance-format.js"></script>
+<script src="risk-math.js"></script>
+<script src="risk-controls.js"></script>
+<script src="futures-funding.js"></script>
+<script src="trade-details.js"></script>
+<script src="rate-refresh.js"></script>
+<script src="market-rates.js"></script>
+<script src="trade-outcomes.js"></script>
+<script src="trade-settings.js"></script>
+</body>
+</html>
